@@ -35,7 +35,7 @@ export default function Register() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                  <Input type="text" required placeholder="Geethika Parvatham" />
+                  <Input type="text" required placeholder="e.g. Your Full Name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
@@ -43,11 +43,11 @@ export default function Register() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Mobile Number</label>
-                  <Input type="tel" required placeholder="+91 98765 43210" />
+                  <Input type="tel" required placeholder="e.g. 9876543210" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
-                  <Input type="text" required placeholder="Hyderabad" />
+                  <Input type="text" required placeholder="e.g. Hyderabad" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
@@ -59,7 +59,7 @@ export default function Register() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Emergency Contact</label>
-                  <Input type="tel" placeholder="+91 91234 56789" />
+                  <Input type="tel" placeholder="e.g. 9123456789" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Preferred Language</label>
