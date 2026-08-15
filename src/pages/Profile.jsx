@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, FEMALE_AVATARS, MALE_AVATARS } from '../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Input } from '../components/ui/Input';
-import { User, Mail, Phone, MapPin, Edit, Save, Key, ChevronRight, ShieldCheck } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Edit, Save, Key, ChevronRight, ShieldCheck, Camera, Upload, Check } from 'lucide-react';
 
 export default function Profile() {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -18,6 +20,8 @@ export default function Profile() {
     mobile: '',
     city: '',
     language: 'English',
+    gender: 'Female',
+    avatar: '',
   });
 
   // Sync formData whenever user changes
@@ -29,14 +33,36 @@ export default function Profile() {
         mobile: user.mobile || '',
         city: user.city || '',
         language: user.language || 'English',
+        gender: user.gender || 'Female',
+        avatar: user.avatar || '',
       });
     }
   }, [user]);
 
   const handleSave = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     updateUser(formData);
     setIsEditing(false);
+    setShowAvatarPicker(false);
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const newAvatar = reader.result;
+        setFormData(prev => ({ ...prev, avatar: newAvatar }));
+        updateUser({ avatar: newAvatar });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const selectAvatar = (url) => {
+    setFormData(prev => ({ ...prev, avatar: url }));
+    updateUser({ avatar: url });
+    setShowAvatarPicker(false);
   };
 
   if (!user) return null;
@@ -58,32 +84,120 @@ export default function Profile() {
 
       <Card>
         <CardContent className="p-6">
-          {/* Profile Header */}
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left mb-8">
-            <div className="relative">
-              <div className="h-24 w-24 rounded-full bg-blue-100 overflow-hidden border-4 border-white shadow-md">
+          {/* Profile Header with Avatar Upload */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left mb-6">
+            <div className="relative group">
+              <div className="h-28 w-28 rounded-full bg-blue-100 overflow-hidden border-4 border-white shadow-md relative">
                 <img
-                  src={user.avatar || `https://i.pravatar.cc/150?u=${user.email}`}
-                  alt="Profile"
+                  src={formData.avatar || user.avatar}
+                  alt={user.fullName}
                   className="h-full w-full object-cover"
                 />
+                
+                {/* Camera Overlay button */}
+                <button
+                  type="button"
+                  onClick={() => setShowAvatarPicker(prev => !prev)}
+                  className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 text-xs font-medium"
+                >
+                  <Camera className="h-6 w-6" />
+                  Change
+                </button>
               </div>
+
+              {/* Quick upload trigger below avatar on mobile */}
+              <button
+                type="button"
+                onClick={() => setShowAvatarPicker(prev => !prev)}
+                className="mt-2 text-xs font-semibold text-blue-900 hover:underline flex items-center gap-1 justify-center sm:justify-start"
+              >
+                <Camera className="h-3.5 w-3.5" /> Change Photo
+              </button>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
+              />
             </div>
+
             <div className="flex-1 space-y-1">
               <div className="flex flex-col sm:flex-row items-center gap-2">
-                <h2 className="text-2xl font-bold text-slate-900">{user.fullName}</h2>
+                <h2 className="text-2xl font-bold text-slate-900">{formData.fullName || user.fullName}</h2>
                 <Badge variant="success" className="gap-1 px-2 py-0.5">
                   <ShieldCheck className="h-3 w-3" /> Verified
                 </Badge>
               </div>
               <p className="text-slate-500 flex items-center justify-center sm:justify-start gap-2">
-                <Mail className="h-4 w-4" /> {user.email}
+                <Mail className="h-4 w-4" /> {formData.email || user.email}
               </p>
               <p className="text-slate-500 flex items-center justify-center sm:justify-start gap-2">
-                <MapPin className="h-4 w-4" /> {user.city || 'Not set'}, India
+                <MapPin className="h-4 w-4" /> {formData.city || user.city || 'Not set'}, India
               </p>
             </div>
           </div>
+
+          {/* Photo Change / Avatar Selection Box */}
+          {showAvatarPicker && (
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-6 space-y-4 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-800">Select Profile Picture</h3>
+                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="gap-1 text-xs">
+                  <Upload className="h-3.5 w-3.5" /> Upload from Computer
+                </Button>
+              </div>
+
+              {/* Female Presets */}
+              <div>
+                <p className="text-xs font-semibold text-slate-500 mb-2">Female Options</p>
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {FEMALE_AVATARS.map((url, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => selectAvatar(url)}
+                      className={`h-14 w-14 rounded-full overflow-hidden border-2 transition-all relative flex-shrink-0 ${
+                        formData.avatar === url ? 'border-blue-600 ring-2 ring-blue-600/30' : 'border-transparent hover:opacity-80'
+                      }`}
+                    >
+                      <img src={url} alt={`Female Avatar ${i+1}`} className="h-full w-full object-cover" />
+                      {formData.avatar === url && (
+                        <div className="absolute inset-0 bg-blue-900/40 flex items-center justify-center text-white">
+                          <Check className="h-5 w-5" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Male Presets */}
+              <div>
+                <p className="text-xs font-semibold text-slate-500 mb-2">Male Options</p>
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {MALE_AVATARS.map((url, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => selectAvatar(url)}
+                      className={`h-14 w-14 rounded-full overflow-hidden border-2 transition-all relative flex-shrink-0 ${
+                        formData.avatar === url ? 'border-blue-600 ring-2 ring-blue-600/30' : 'border-transparent hover:opacity-80'
+                      }`}
+                    >
+                      <img src={url} alt={`Male Avatar ${i+1}`} className="h-full w-full object-cover" />
+                      {formData.avatar === url && (
+                        <div className="absolute inset-0 bg-blue-900/40 flex items-center justify-center text-white">
+                          <Check className="h-5 w-5" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Editable Fields */}
           <form className="grid sm:grid-cols-2 gap-5 pt-6 border-t border-slate-100" onSubmit={handleSave}>
@@ -125,6 +239,19 @@ export default function Profile() {
                 disabled={!isEditing}
                 className={!isEditing ? 'bg-slate-50 text-slate-600' : ''}
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Gender</label>
+              <select
+                className={`flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 ${!isEditing ? 'bg-slate-50 text-slate-600 cursor-not-allowed opacity-60' : ''}`}
+                value={formData.gender}
+                onChange={e => setFormData({ ...formData, gender: e.target.value })}
+                disabled={!isEditing}
+              >
+                <option>Female</option>
+                <option>Male</option>
+                <option>Other</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Preferred Language</label>

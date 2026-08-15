@@ -20,6 +20,7 @@ export default function Register() {
     confirmPassword: '',
     emergencyContact: '',
     language: 'English',
+    gender: 'Female',
   });
 
   const [errors, setErrors] = useState({});
@@ -52,7 +53,14 @@ export default function Register() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    register({ fullName: formData.fullName, email: formData.email, mobile: formData.mobile, city: formData.city, language: formData.language });
+    register({
+      fullName: formData.fullName,
+      email: formData.email,
+      mobile: formData.mobile,
+      city: formData.city,
+      language: formData.language,
+      gender: formData.gender,
+    });
     navigate('/app/dashboard');
   };
 
@@ -118,6 +126,19 @@ export default function Register() {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Gender</label>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
+                    value={formData.gender}
+                    onChange={e => setFormData(prev => ({ ...prev, gender: e.target.value }))}
+                  >
+                    <option>Female</option>
+                    <option>Male</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Preferred Language</label>
                   <select
                     className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
